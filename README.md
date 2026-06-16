@@ -3,7 +3,7 @@ habit tracker widget
 A 90 day habit tracker widget for IOS ( runs using the Scriptable app ) 
 
 why :
-habbit tracker app wants you to pay a monthly ( or one time . . ) subscription just to show dots on a screen . . . nah. 
+habbit tracker app wants you to pay a monthly ( or one time . . ) subscription just to show dots on a screen . .
 
 You do not need that. With this script and the free Scriptable app you get the exact same thing.
 
