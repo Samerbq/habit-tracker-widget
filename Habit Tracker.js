@@ -9,7 +9,7 @@ const START_DATE = new Date("2026-06-17") // set the start date here !
 const END_DATE = new Date(START_DATE)
 END_DATE.setDate(START_DATE.getDate() + 89)
 
-const BG_IMAGE_URL = "" // no background image by default - set a url to use one : ) 
+const BG_IMAGE_URL = "" // no background image by default - set a url to use one
 const BG_COLOR = "#ffffff"
 const BG_OVERLAY_OPACITY = 0.5
 const COLOR_FILLED = new Color("#000000")
