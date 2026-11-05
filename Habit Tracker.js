@@ -1,124 +1,143 @@
-// variables used by Scriptable - these must be at the very top of the file so do not edit them !
+// variables used by scriptable - these must stay at the very top of the file , so do not edit them !
 
 
-const EVENT_NAME = "goal"
+// settings
 
-const START_DATE = new Date("2026-06-17") // set the start date here ! 
+const eventName = 'goal'
+const startDate = new Date( '2026-11-05' )   // set the start date here !
 
+const endDate = new Date( startDate )
+endDate.setDate( startDate.getDate() + 89 )
 
-const END_DATE = new Date(START_DATE)
-END_DATE.setDate(START_DATE.getDate() + 89)
+const bgImageUrl  = ''   // no bg image as default ( use url if you want to use one )
+const bgColor     = '#ffffff'
+const bgOpacity   = 0.5
+const filledColor = new Color( '#000000' )
+const emptyColor  = new Color( '#000000', 0.3 )
 
-const BG_IMAGE_URL = "" // no background image by default - set a url to use one
-const BG_COLOR = "#ffffff"
-const BG_OVERLAY_OPACITY = 0.5
-const COLOR_FILLED = new Color("#000000")
-const COLOR_UNFILLED = new Color("#000000", 0.3)
-
-const PADDING = 8
-const CIRCLE_SIZE = 6
-const CIRCLE_SPACING = 4
-const TEXT_SPACING = 8
-const DOT_SHIFT_LEFT = 2
-const YEAR_OFFSET = DOT_SHIFT_LEFT - 2
-const DAYS_LEFT_OFFSET = 0
-
-const NOW = new Date()
-const MS_PER_DAY = 86400000
-const DAYS_TOTAL = 90
+const padding        = 8
+const dotSize        = 6
+const dotSpacing     = 4
+const textSpacing    = 8
+const dotShift       = 2
+const nameOffset     = dotShift - 2
+const daysLeftOffset = 0
 
 
-const DAYS_SINCE_START = Math.min(DAYS_TOTAL, Math.max(0, Math.floor((NOW - START_DATE) / MS_PER_DAY) + 1))
-const DAYS_UNTIL_END = Math.max(0, DAYS_TOTAL - DAYS_SINCE_START + 1)
+// days
+
+const now       = new Date()
+const msPerDay  = 86400000
+const totalDays = 90
+
+const daysPassed = Math.min( totalDays, Math.max( 0, Math.floor( ( now - startDate ) / msPerDay ) + 1 ) )
+const daysLeft   = Math.max( 0, totalDays - daysPassed + 1 )
 
 const widget = new ListWidget()
 
 
+// background
+
 let bgImage = null
+
 try {
-  const req = new Request(BG_IMAGE_URL)
-  bgImage = await req.loadImage()
-} catch (e) {
-  console.log("Couldn't load background image")
-}
-if (bgImage) {
-  widget.backgroundImage = bgImage
+    const request = new Request( bgImageUrl )
+    bgImage       = await request.loadImage()
+} catch ( e ) {
+    console.log( "couldn't load background image" )
 }
 
+if ( bgImage ) {
+    widget.backgroundImage = bgImage
+}
 
 const overlay = new LinearGradient()
-overlay.locations = [0, 1]
-overlay.colors = [
-  new Color(BG_COLOR, BG_OVERLAY_OPACITY),
-  new Color(BG_COLOR, BG_OVERLAY_OPACITY)
+
+overlay.locations = [ 0, 1 ]
+overlay.colors    = [
+    new Color( bgColor, bgOpacity ),
+    new Color( bgColor, bgOpacity )
 ]
+
 widget.backgroundGradient = overlay
 
 
-const WIDGET_WIDTH = 320
-const AVAILABLE_WIDTH = WIDGET_WIDTH - (2 * PADDING)
-const TOTAL_CIRCLE_WIDTH = CIRCLE_SIZE + CIRCLE_SPACING
-const COLUMNS = Math.floor(AVAILABLE_WIDTH / TOTAL_CIRCLE_WIDTH)
-const ROWS = Math.ceil(DAYS_TOTAL / COLUMNS)
+// layout
 
-const MENLO_REGULAR = new Font("Menlo", 12)
-const MENLO_BOLD = new Font("Menlo-Bold", 12)
+const widgetWidth = 320
+const usableWidth = widgetWidth - ( 2 * padding )
+const dotWidth    = dotSize + dotSpacing
+const columns     = Math.floor( usableWidth / dotWidth )
+const rows        = Math.ceil( totalDays    / columns )
 
-widget.setPadding(12, PADDING, 12, PADDING)
+const fontRegular = new Font( 'Menlo', 12 )
+const fontBold    = new Font( 'Menlo-Bold', 12 )
 
-// Build grid
+widget.setPadding( 12, padding, 12, padding )
+
+
+// grid of dots ( one per day )
+
 const gridContainer = widget.addStack()
 gridContainer.layoutVertically()
 
-const gridStack = gridContainer.addStack()
-gridStack.layoutVertically()
-gridStack.spacing = CIRCLE_SPACING
+const grid = gridContainer.addStack()
+grid.layoutVertically()
+grid.spacing = dotSpacing
 
-for (let row = 0; row < ROWS; row++) {
-  const rowStack = gridStack.addStack()
-  rowStack.layoutHorizontally()
-  rowStack.addSpacer(DOT_SHIFT_LEFT)
+for ( let row = 0 ; row < rows ; row++ ) {
 
-  for (let col = 0; col < COLUMNS; col++) {
-    const day = row * COLUMNS + col + 1
-    if (day > DAYS_TOTAL) continue
+    const rowStack = grid.addStack()
+    rowStack.layoutHorizontally()
+    rowStack.addSpacer( dotShift )
 
-    const circle = rowStack.addText("●")
-    circle.font = Font.systemFont(CIRCLE_SIZE);
-    circle.textColor = day <= DAYS_SINCE_START ? COLOR_FILLED : COLOR_UNFILLED
+    for ( let col = 0 ; col < columns ; col++ ) {
 
-    if (col < COLUMNS - 1) rowStack.addSpacer(CIRCLE_SPACING)
-  }
+        const day = row * columns + col + 1
+        if ( day > totalDays ) continue
+
+        const dot     = rowStack.addText( '●' )
+        dot.font      = Font.systemFont( dotSize )
+        dot.textColor = day <= daysPassed ? filledColor : emptyColor
+
+        if ( col < columns - 1 ) rowStack.addSpacer( dotSpacing )
+    }
 }
 
-widget.addSpacer(TEXT_SPACING)
+widget.addSpacer( textSpacing )
 
+
+// footer ( name left , days left right )
 
 const footer = widget.addStack()
 footer.layoutHorizontally()
 
-const eventStack = footer.addStack()
-eventStack.addSpacer(YEAR_OFFSET)
-const eventText = eventStack.addText(EVENT_NAME)
-eventText.font = MENLO_BOLD
-eventText.textColor = COLOR_FILLED
+const nameStack = footer.addStack()
+nameStack.addSpacer( nameOffset )
 
-const daysText = `${DAYS_UNTIL_END} days left`
-const textWidth = daysText.length * 7.5
-const availableSpace = WIDGET_WIDTH - (PADDING * 2) - YEAR_OFFSET - (eventText.text.length * 7.5)
-const spacerLength = availableSpace - textWidth + DAYS_LEFT_OFFSET
+const nameText     = nameStack.addText( eventName )
+nameText.font      = fontBold
+nameText.textColor = filledColor
 
-footer.addSpacer(spacerLength)
+const leftString = `${ daysLeft } days left`
+const leftWidth  = leftString.length * 7.5
+const freeSpace  = widgetWidth - ( padding * 2 ) - nameOffset - ( nameText.text.length * 7.5 )
+const spacerSize = freeSpace   - leftWidth + daysLeftOffset
 
-const daysTextStack = footer.addStack()
-const daysLeft = daysTextStack.addText(daysText)
-daysLeft.font = MENLO_REGULAR
-daysLeft.textColor = COLOR_UNFILLED
+footer.addSpacer( spacerSize )
+
+const leftStack    = footer.addStack()
+const leftText     = leftStack.addText( leftString )
+leftText.font      = fontRegular
+leftText.textColor = emptyColor
 
 
-if (config.runsInWidget) {
-  Script.setWidget(widget)
+// show
+
+if ( config.runsInWidget ) {
+    Script.setWidget( widget )
 } else {
-  widget.presentMedium()
+    widget.presentMedium()
 }
+
 Script.complete()
