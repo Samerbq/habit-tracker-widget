@@ -1,0 +1,6 @@
+# editor settings
+.idea/
+
+# windows
+desktop.ini
+Thumbs.db
